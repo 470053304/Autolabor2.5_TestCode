@@ -5,9 +5,10 @@
 ---
 
 新手教程：
-[Tutorials][1]
-[rospy][2]
-[roscpp][3]
+
+* [Tutorials][1]
+* [rospy][2]
+* [roscpp][3]
 
 ## 三个级别：计算图级、文件系统级、社区级
 * 计算图是ROS处理数据的一种点对点的网络形式。程序运行时，所有进程以及他们所进行的数据处理，将会通过一种点对点的网络形式表现出来。这一级主要包括几个重要概念：节点（node）、消息（message）、主题（topic）、服务（service）
@@ -31,20 +32,29 @@ opt. authors, url's, dependencies, plugins, etc...
 $ cd ~/catkin_ws #回到工作空间,catkin_make必须在工作空间下执行
 $ catkin_make    #开始编译
 $ source ~/catkin_ws/devel/setup.bash #刷新坏境
+$ echo "source ~/catkin_ws/devel/setup.bash" >> ~/.bashrc #一劳永逸法
 ```
 ## catkin 工作空间
 ```
 $ mkdir -p ~/catkin_ws/src　　
 $ cd ~/catkin_ws/
 $ catkin_make #初始化工作空间
+
+~/catkin_ws/src$ catkin_create_pkg beginner_tutorials std_msgs nav_msgs rospy roscpp 
+#用catkin_create_pkg命令来创建一个名为'beginner_tutorials'的新程序包，这个程序包依赖于std_msgs、nav_msgs、roscpp和rospy
 ```
 * catkin工作空间的结构包括了src、build、devel三个路径，在有些编译选项下也可能包括其他。但这三个文件夹是catkin编译系统默认的。它们的具体作用如下：
 * src/: ROS的catkin软件包（源代码包）
 * build/: catkin（CMake）的缓存信息和中间文件
 * devel/: 生成的目标文件（包括头文件，动态链接库，静态链接库，可执行文件等）、环境变量
 后两个路径由catkin系统自动生成、管理，我们日常的开发一般不会去涉及，而主要用到的是src文件夹，我们写的ROS程序、网上下载的ROS源代码包都存放在这里。在编译时，catkin编译系统会递归的查找和编译src/下的每一个源代码包。
+
+![此处输入图片的描述][4]
+
 ## package
 ROS中的package的定义更加具体，它不仅是Linux上的软件包，更是catkin编译的基本单元。
+
+![此处输入图片的描述][5]
 
 定义package的是CMakeLists.txt和package.xml，这两个文件是package中必不可少的。catkin编译系统在编译前，首先就要解析这两个文件。这两个文件就定义了一个package。
 |文件名|描述|
@@ -70,6 +80,7 @@ ROS中的package的定义更加具体，它不仅是Linux上的软件包，更�
 ```
 $ rospack help
 $ rospack list
+$ rospack list|grep catkin_ws #查找catkin_ws下的所有package
 $ rosdep install --from-paths src --ignore-src --rosdistro=kinetic -y #安装工作空间中src路径下所有package的依赖项（由pacakge.xml文件指定）
 ```
 
@@ -87,6 +98,8 @@ ROS里常见的Metapacakge有：
 ROS中的通信方式中，topic是常用的一种。对于实时性、周期性的消息，使用topic来传输是最佳的选择。topic是一种点对点的单向通信方式，这里的“点”指的是node，也就是说node之间可以通过topic方式来传递信息。topic要经历下面几步的初始化过程：首先，publisher节点和subscriber节点都要到节点管理器进行注册，然后publisher会发布topic，subscriber在master的指挥下会订阅该topic，从而建立起sub-pub之间的通信。注意整个过程是单向的。
 
 那么怎么样来理解“异步”这个概念呢？在node1每发布一次消息之后，就会继续执行下一个动作，至于消息是什么状态、被怎样处理，它不需要了解；而对于node2图像处理程序，它只管接收和处理/camera_rgb上的消息，至于是谁发来的，它不会关心。所以node1、node2两者都是各司其责，不存在协同工作，我们称这样的通信方式是异步的。
+
+![此处输入图片的描述][6]
 
 
 ```
@@ -106,6 +119,8 @@ $ rosmsg show msg_name
 Service通信是双向的，它不仅可以发送消息，同时还会有反馈。所以service包括两部分，一部分是请求方（Clinet），另一部分是应答方/服务提供方（Server）。这时请求方（Client）就会发送一个request，要等待server处理，反馈回一个reply，这样通过类似“请求-应答”的机制完成整个服务通信。
 
 Service是同步通信方式，所谓同步就是说，此时Node A发布请求后会在原地等待reply，直到Node B处理完了请求并且完成了reply，Node A才会继续执行。Node A等待过程中，是处于阻塞状态的成通信。这样的通信模型没有频繁的消息传递，没有冲突与高系统资源的占用，只有接受请求才执行服务，简单而且高效。
+
+![此处输入图片的描述][7]
 
 ```
 # 常用命令
@@ -136,10 +151,16 @@ Action的工作原理是client-server模式，也是一个双向的通信模式�
 利用动作库进行请求响应，动作的内容格式应包含三个部分，目标、反馈、结果。
 
 ## gazebo
-[gazebo入门教程][4]
-[gazebo-ROS-Wiki][5]
+
+![此处输入图片的描述][8]
+
+* [gazebo入门教程][9]
+* [gazebo-ROS-Wiki][10]
 ## rviz
-[rviz-ROS-Wiki][6]
+
+![此处输入图片的描述][11]
+
+* [rviz-ROS-Wiki][12]
 ## rqt
 ### rqt_graph
 rqt_graph是来显示通信架构，也就是我们上一章所讲的内容节点、主题等等，当前有哪些Node和topic在运行，消息的流向是怎样，都能通过这个语句显示出来。此命令由于能显示系统的全貌，所以非常的常用。
@@ -154,10 +175,33 @@ Rosbridge是一个用在ROS系统和其他系统之间的一个功能包,就像�
 
 Rosbridge主要包含两部分内容:协议(Potocol)和实现(Implementation)
 
+## TF & URDF
+
+tf的定义不是那么的死板，它可以被当做是一种标准规范，这套标准定义了坐标转换的数据格式和数据结构．tf本质是树状的数据结构，所以我们通常称之为"tf tree",tf也可以看成是一个topic:/tf，话题中的message保存的就是tf tree的数据结构格式．维护了整个机器人的甚至是地图的坐标转换关系．tf还可以看成是一个package,它当中包含了很多的工具．比如可视化，查看关节间的tf,debug tf等等．tf含有一部分的接口，就是我们前面章节介绍的roscpp和rospy里关于tf的API．所以可以看成是话题转换的标准，话题，工具，接口．
+
+![此处输入图片的描述][13]
+
+观察上图，我们可以看到ROS数据结构的一个抽象图，ROS中机器人模型包含大量的部件，这些部件统称之为link,每一个link上面对应着一个frame, 即一个坐标系．link和frame概念是绑定在一起的．像上图pr2模型中我们可以看到又很多的frame,错综复杂的铺置在机器人的各个link上，维护各个坐标系之间的关系，就要靠着tf tree来处理，维护着各个坐标系之间的联通．如下图：
+
+![TFtree][14]
+
+URDF（Unified Robot Description Format）统一机器人描述格式，URDF使用XML格式描述机器人文件。URDF语法规范，参考链接：http://wiki.ros.org/urdf/XML，URDF组件，是由不同的功能包和组件组成。
+
+![此处输入图片的描述][15]
+
 
   [1]: http://www.ros.org/wiki/ROS/Tutorials
   [2]: http://www.ros.org/wiki/rospy_tutorials
   [3]: http://www.ros.org/wiki/roscpp/Tutorials
-  [4]: https://blog.csdn.net/weixin_41045354/article/details/84881498
-  [5]: http://wiki.ros.org/gazebo
-  [6]: http://wiki.ros.org/rviz
+  [4]: https://sychaichangkun.gitbooks.io/ros-tutorial-icourse163/content/pics/catkin_flow.jpg
+  [5]: https://sychaichangkun.gitbooks.io/ros-tutorial-icourse163/content/pics/catkin_ws.jpg
+  [6]: https://sychaichangkun.gitbooks.io/ros-tutorial-icourse163/content/pics/topic-stru.jpg
+  [7]: https://sychaichangkun.gitbooks.io/ros-tutorial-icourse163/content/pics/service_structure.png
+  [8]: https://sychaichangkun.gitbooks.io/ros-tutorial-icourse163/content/pics/Gazebo.png
+  [9]: https://blog.csdn.net/weixin_41045354/article/details/84881498
+  [10]: http://wiki.ros.org/gazebo
+  [11]: https://sychaichangkun.gitbooks.io/ros-tutorial-icourse163/content/pics/RViz.png
+  [12]: http://wiki.ros.org/rviz
+  [13]: https://sychaichangkun.gitbooks.io/ros-tutorial-icourse163/content/pics/tf_wiki.png
+  [14]: https://sychaichangkun.gitbooks.io/ros-tutorial-icourse163/content/pics/tf_tree_pr2.png
+  [15]: https://sychaichangkun.gitbooks.io/ros-tutorial-icourse163/content/pics/image039.png
